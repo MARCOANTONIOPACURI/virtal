@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Desafío Académico 🎮</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Favicon emoji -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏆</text></svg>" />
+</head>
+<body>
+
+  <!-- FONDO ANIMADO -->
+  <div id="fondo-animado"></div>
+  <div id="particulas"></div>
+
+  <!-- APLICACIÓN PRINCIPAL -->
+  <div id="app">
+
+    <!-- ================================================== -->
+    <!-- PANTALLA 1: BIENVENIDA                             -->
+    <!-- ================================================== -->
+    <div id="pantalla-bienvenida" class="pantalla activa">
+      <div class="bienvenida-contenido">
+        <span class="logo-juego">🏆</span>
+        <h1 class="titulo-juego">Desafío<br>Académico</h1>
+        <p class="subtitulo-juego">¡Demuestra todo lo que sabes!</p>
+        <div class="decoracion-bienvenida">
+          <span>🧠</span><span>🔢</span><span>🌍</span><span>📚</span><span>⭐</span>
+        </div>
+        <button class="btn-principal" onclick="mostrarSeleccionGrupo()">
+          ▶ COMENZAR
+        </button>
+      </div>
+    </div>
+
+    <!-- ================================================== -->
+    <!-- PANTALLA 2: SELECCIÓN DE GRUPO                     -->
+    <!-- ================================================== -->
+    <div id="pantalla-grupos" class="pantalla">
+      <div class="grupos-contenido">
+        <h2 class="titulo-seccion">🎯 Escoge tu Grupo</h2>
+        <p class="subtitulo-seccion">Selecciona el grupo al que perteneces</p>
+        <div id="contenedor-grupos">
+          <!-- Los grupos se generan dinámicamente desde script.js -->
+        </div>
+        <div style="text-align:center;">
+          <button class="btn-volver" onclick="mostrarPantalla('pantalla-bienvenida')">
+            ← Volver al inicio
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================== -->
+    <!-- PANTALLA 3: REGISTRO                               -->
+    <!-- ================================================== -->
+    <div id="pantalla-registro" class="pantalla">
+      <div class="registro-contenido">
+        <div class="tarjeta-registro">
+          <span class="registro-icono">👤</span>
+          <h2 class="titulo-seccion" style="margin-bottom:8px;">¡Únete al juego!</h2>
+          <div class="grupo-badge" id="grupo-seleccionado-label">Grupo 1</div>
+          <br/>
+          <label style="font-size:0.9rem;color:var(--texto-suave);font-weight:700;display:block;margin-bottom:10px;">
+            Ingresa tu primer nombre:
+          </label>
+          <input
+            type="text"
+            id="input-nombre"
+            class="campo-nombre"
+            placeholder="Tu nombre aquí..."
+            maxlength="30"
+            autocomplete="off"
+            autocapitalize="words"
+          />
+          <button class="btn-entrar" onclick="registrarEstudiante()">
+            🚀 ENTRAR AL JUEGO
+          </button>
+          <div class="error-mensaje" id="error-registro"></div>
+        </div>
+        <div style="text-align:center;margin-top:15px;">
+          <button class="btn-volver" onclick="mostrarSeleccionGrupo()">
+            ← Cambiar de grupo
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================== -->
+    <!-- PANTALLA 4: MENÚ DE MUNDOS                         -->
+    <!-- ================================================== -->
+    <div id="pantalla-mundos" class="pantalla">
+      <div class="mundos-contenido">
+        <div class="bienvenida-personalizada" id="bienvenida-nombre">¡Hola!</div>
+        <h2 class="titulo-seccion">🌟 Elige un Mundo</h2>
+        <p class="subtitulo-seccion">¿En qué área quieres demostrar tus conocimientos?</p>
+
+        <!-- Banner de próximamente -->
+        <div class="banner-proximamente" id="banner-proximamente">
+          <p id="texto-proximamente">🚀 Próximamente disponible</p>
+        </div>
+
+        <div class="mundos-grid">
+
+          <!-- MUNDO NÚMEROS (ACTIVO) -->
+          <div class="tarjeta-mundo mundo-numeros" onclick="seleccionarMundo('numeros')">
+            <span class="mundo-icono">🔢</span>
+            <div class="mundo-titulo">NÚMEROS</div>
+            <div class="mundo-desc">Razonamiento matemático</div>
+            <div class="badge-disponible">✅ ¡DISPONIBLE!</div>
+          </div>
+
+          <!-- MUNDO CIENCIAS (PRÓXIMAMENTE) -->
+          <div class="tarjeta-mundo mundo-ciencias proximamente" onclick="seleccionarMundo('ciencias')">
+            <span class="mundo-icono">🌍</span>
+            <div class="mundo-titulo">CIENCIAS</div>
+            <div class="mundo-desc">Exploración del mundo natural</div>
+            <div class="badge-pronto">🔜 Próximamente</div>
+          </div>
+
+          <!-- MUNDO LETRAS (ACTIVO) -->
+          <div class="tarjeta-mundo mundo-letras" onclick="seleccionarMundo('letras')">
+            <span class="mundo-icono">📚</span>
+            <div class="mundo-titulo">LETRAS</div>
+            <div class="mundo-desc">Comprensión, sinónimos, verbos...</div>
+            <div class="badge-disponible">✅ ¡DISPONIBLE!</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================== -->
+    <!-- PANTALLA 5: QUIZ                                   -->
+    <!-- ================================================== -->
+    <div id="pantalla-quiz" class="pantalla">
+      <div class="quiz-contenido">
+
+        <!-- Header del quiz -->
+        <div class="quiz-header">
+          <span class="progreso-texto" id="progreso-texto">Pregunta 1 de 20</span>
+          <div class="barra-quiz-container">
+            <div class="barra-quiz-fill" id="barra-quiz-fill" style="width:0%"></div>
+          </div>
+          <span class="progreso-porcentaje" id="progreso-porcentaje">0%</span>
+          <!-- Marcador en vivo -->
+          <div class="marcador-live">
+            <div class="marcador-item correctas">✅ <span id="marcador-correctas">0</span></div>
+            <div class="marcador-item incorrectas">❌ <span id="marcador-incorrectas">0</span></div>
+          </div>
+        </div>
+
+        <!-- Badge de nivel de dificultad -->
+        <div style="text-align:center;margin-bottom:10px">
+          <span id="nivel-badge" style="display:inline-block;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);padding:4px 18px;border-radius:20px;font-size:0.8rem;font-weight:700;color:#B8B8D1;letter-spacing:1px">⭐ Básico</span>
+        </div>
+
+        <!-- Tarjeta de la pregunta -->
+        <div class="tarjeta-pregunta" id="contenedor-pregunta">
+          <p class="texto-pregunta" id="texto-pregunta">Cargando pregunta...</p>
+          <div id="contenedor-opciones">
+            <!-- Las opciones se generan dinámicamente -->
+          </div>
+          <!-- Feedback inmediato -->
+          <div class="feedback" id="feedback-respuesta"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================================================== -->
+    <!-- PANTALLA 6: RESULTADOS                             -->
+    <!-- ================================================== -->
+    <div id="pantalla-resultados" class="pantalla">
+      <div class="resultados-contenido">
+        <div class="tarjeta-resultado">
+
+          <!-- Medalla y nombre -->
+          <span class="medalla-resultado" id="resultado-medalla">🏆</span>
+          <h2 class="resultado-nombre" id="resultado-nombre">Estudiante</h2>
+          <div class="resultado-grupo-badge" id="resultado-grupo">Grupo 1</div>
+          <p class="resultado-mensaje" id="resultado-mensaje">¡Excelente trabajo!</p>
+
+          <!-- Estadísticas -->
+          <div class="stats-grid">
+            <div class="stat-item stat-correctas">
+              <span class="stat-numero" id="resultado-correctas">0</span>
+              <span class="stat-label">✅ Correctas</span>
+            </div>
+            <div class="stat-item stat-incorrectas">
+              <span class="stat-numero" id="resultado-incorrectas">0</span>
+              <span class="stat-label">❌ Incorrectas</span>
+            </div>
+            <div class="stat-item stat-puntaje">
+              <span class="stat-numero" id="resultado-porcentaje">0%</span>
+              <span class="stat-label">🎯 Puntaje</span>
+            </div>
+          </div>
+
+          <!-- Estado envío a Google Sheets -->
+          <div class="estado-envio" id="estado-envio">📤 Guardando resultados...</div>
+
+          <!-- Detalle pregunta por pregunta -->
+          <div class="detalle-titulo">Detalle de respuestas</div>
+          <div id="lista-detalle"></div>
+
+          <!-- Botones -->
+          <div class="botones-resultado">
+            <button class="btn-principal" onclick="volverAlMenu()" style="padding:13px 28px;font-size:1rem;">
+              🏠 Volver al Menú
+            </button>
+            <button class="btn-secundario" onclick="iniciarQuiz()">
+              🔄 Intentar de nuevo
+            </button>
+          </div>
+
+        </div><!-- /tarjeta-resultado -->
+
+        <!-- ========================================= -->
+        <!-- SECCIÓN DE RESOLUCIONES                   -->
+        <!-- ========================================= -->
+        <div class="resoluciones-seccion">
+          <h3 class="resoluciones-titulo">📖 Resolución de cada pregunta</h3>
+          <p class="resoluciones-sub">Revisa el paso a paso de todas las preguntas</p>
+          <div id="contenedor-resoluciones"></div>
+        </div>
+
+      </div><!-- /resultados-contenido -->
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- PANTALLA 7: QUIZ LETRAS                            -->
+    <!-- ================================================== -->
+    <div id="pantalla-quiz-letras" class="pantalla">
+      <div class="quiz-contenido">
+
+        <!-- Header -->
+        <div class="quiz-header">
+          <span class="progreso-texto" id="letras-progreso-texto">Pregunta 1 de 15</span>
+          <div class="barra-quiz-container">
+            <div class="barra-quiz-fill" id="letras-barra-fill" style="width:0%"></div>
+          </div>
+          <span class="progreso-porcentaje" id="letras-progreso-pct">0%</span>
+          <div class="marcador-live">
+            <div class="marcador-item correctas">✅ <span id="letras-correctas">0</span></div>
+            <div class="marcador-item incorrectas">❌ <span id="letras-incorrectas">0</span></div>
+          </div>
+        </div>
+
+        <!-- Badge tipo de pregunta -->
+        <div style="text-align:center;margin-bottom:10px">
+          <span id="letras-tipo-badge" style="display:inline-block;background:rgba(255,101,132,0.15);border:1px solid rgba(255,101,132,0.3);padding:4px 18px;border-radius:20px;font-size:0.8rem;font-weight:700;color:#FF6584;letter-spacing:1px">Comprensión</span>
+          <span id="letras-texto-badge" style="display:inline-block;background:rgba(255,217,61,0.12);border:1px solid rgba(255,217,61,0.25);padding:4px 14px;border-radius:20px;font-size:0.78rem;font-weight:700;color:#FFD93D;margin-left:6px">Texto 1</span>
+        </div>
+
+        <!-- Visor de texto (se muestra/oculta según corresponda) -->
+        <div id="letras-visor-texto" class="visor-texto" style="display:none">
+          <div class="visor-titulo" id="letras-visor-titulo">📖 Texto 1</div>
+          <div class="visor-cuerpo" id="letras-visor-cuerpo"></div>
+          <button class="visor-toggle" onclick="toggleVisor()">▲ Ocultar texto</button>
+        </div>
+
+        <!-- Tarjeta pregunta -->
+        <div class="tarjeta-pregunta" id="letras-contenedor-pregunta">
+          <p class="texto-pregunta" id="letras-texto-pregunta">Cargando...</p>
+          <div id="letras-contenedor-opciones"></div>
+          <div class="feedback" id="letras-feedback"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================================================== -->
+    <!-- PANTALLA 8: RESULTADOS LETRAS                      -->
+    <!-- ================================================== -->
+    <div id="pantalla-resultados-letras" class="pantalla">
+      <div class="resultados-contenido">
+        <div class="tarjeta-resultado">
+          <span class="medalla-resultado" id="letras-medalla">🏆</span>
+          <h2 class="resultado-nombre" id="letras-resultado-nombre">Estudiante</h2>
+          <div class="resultado-grupo-badge" id="letras-resultado-grupo">Grupo 1</div>
+          <p style="color:#4CC9F0;font-size:0.85rem;font-weight:700;margin-bottom:10px">📚 MUNDO LETRAS</p>
+          <p class="resultado-mensaje" id="letras-resultado-mensaje">¡Excelente!</p>
+
+          <div class="stats-grid">
+            <div class="stat-item stat-correctas">
+              <span class="stat-numero" id="letras-stat-correctas">0</span>
+              <span class="stat-label">✅ Correctas</span>
+            </div>
+            <div class="stat-item stat-incorrectas">
+              <span class="stat-numero" id="letras-stat-incorrectas">0</span>
+              <span class="stat-label">❌ Incorrectas</span>
+            </div>
+            <div class="stat-item stat-puntaje">
+              <span class="stat-numero" id="letras-stat-puntaje">0%</span>
+              <span class="stat-label">🎯 Puntaje</span>
+            </div>
+          </div>
+
+          <div class="estado-envio" id="letras-estado-envio"></div>
+
+          <!-- Resumen rápido -->
+          <div class="detalle-titulo">Detalle de respuestas</div>
+          <div id="letras-lista-detalle"></div>
+
+          <div class="botones-resultado" style="margin-top:20px">
+            <button class="btn-principal" onclick="volverAlMenu()" style="padding:13px 28px;font-size:1rem;">🏠 Menú</button>
+            <button class="btn-secundario" onclick="iniciarQuizLetras()">🔄 Repetir</button>
+          </div>
+        </div>
+
+        <!-- Resoluciones letras -->
+        <div class="resoluciones-seccion">
+          <h3 class="resoluciones-titulo">📖 Resolución de cada pregunta</h3>
+          <p class="resoluciones-sub">Revisa la explicación de comprensión y gramática</p>
+          <div id="letras-contenedor-resoluciones"></div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /app -->
+
+  <!-- SCRIPTS -->
+  <script src="preguntas.js"></script>
+  <script src="script.js"></script>
+
+</body>
+</html>

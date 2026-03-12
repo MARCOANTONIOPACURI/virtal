@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel del Profesor - Desafío Académico</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+
+    :root {
+      --primario:    #6C63FF;
+      --secundario:  #FF6584;
+      --acento:      #43E97B;
+      --amarillo:    #FFD93D;
+      --azul:        #4CC9F0;
+      --naranja:     #FF6B35;
+      --texto-suave: #B8B8D1;
+      --c-numeros:   #FFD93D;
+      --c-letras:    #FF6584;
+      --c-ciencias:  #43E97B;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body { font-family: 'Nunito', sans-serif; color: #fff; min-height: 100vh; background: #1A1A2E; }
+
+    #fondo-animado {
+      position: fixed; inset: 0;
+      background: linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%);
+      z-index: 0; pointer-events: none;
+    }
+    #fondo-animado::before {
+      content: ''; position: absolute; width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(108,99,255,0.15) 0%, transparent 70%);
+      top: -200px; left: -200px;
+      animation: burbuja 8s ease-in-out infinite alternate;
+    }
+    #fondo-animado::after {
+      content: ''; position: absolute; width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(255,101,132,0.12) 0%, transparent 70%);
+      bottom: -100px; right: -100px;
+      animation: burbuja 10s ease-in-out infinite alternate-reverse;
+    }
+    @keyframes burbuja {
+      from { transform: translate(0,0) scale(1); }
+      to   { transform: translate(100px,80px) scale(1.2); }
+    }
+
+    .panel-contenedor { position: relative; z-index: 10; max-width: 1100px; margin: 0 auto; padding: 35px 22px 80px; }
+
+    /* ── Header ── */
+    .panel-header { text-align: center; margin-bottom: 35px; }
+    .panel-titulo {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(2rem, 5vw, 2.8rem);
+      background: linear-gradient(135deg, var(--amarillo), var(--naranja));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      margin-bottom: 6px;
+    }
+    .panel-subtitulo { color: var(--texto-suave); font-size: 0.9rem; margin-bottom: 20px; }
+    .btn-volver-inicio {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg, var(--primario), var(--azul));
+      color: #fff; padding: 10px 24px; border-radius: 25px;
+      text-decoration: none; font-weight: 800; font-size: 0.9rem; transition: all 0.3s;
+    }
+    .btn-volver-inicio:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(108,99,255,0.4); }
+
+    /* ── Resumen ── */
+    .resumen-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-bottom: 30px; }
+    .resumen-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px 12px; text-align: center; }
+    .resumen-numero { font-family: 'Fredoka One', cursive; font-size: 2.2rem; color: var(--amarillo); display: block; }
+    .resumen-label  { font-size: 0.72rem; color: var(--texto-suave); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* ── Separador ── */
+    .separador { height: 1px; background: rgba(255,255,255,0.07); margin: 30px 0; }
+    .seccion-titulo { font-family: 'Fredoka One', cursive; font-size: 1.3rem; display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+
+    /* ── Tabs ── */
+    .tabs-areas { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 22px; }
+    .tab-area {
+      padding: 10px 24px; border-radius: 30px;
+      font-family: 'Fredoka One', cursive; font-size: 1rem;
+      cursor: pointer; border: 2px solid transparent;
+      transition: all 0.25s; background: rgba(255,255,255,0.05); color: var(--texto-suave);
+    }
+    .tab-area:hover { transform: translateY(-2px); }
+    .tab-area.activo-numeros  { background: rgba(255,217,61,0.15);  border-color: var(--c-numeros);  color: var(--c-numeros); }
+    .tab-area.activo-letras   { background: rgba(255,101,132,0.15); border-color: var(--c-letras);   color: var(--c-letras); }
+    .tab-area.activo-ciencias { background: rgba(67,233,123,0.15);  border-color: var(--c-ciencias); color: var(--c-ciencias); }
+
+    /* ── Panel área ── */
+    .area-panel { display: none; }
+    .area-panel.visible { display: block; }
+
+    .area-header {
+      display: flex; align-items: center; gap: 14px;
+      padding: 18px 22px; border-radius: 18px; margin-bottom: 16px;
+    }
+    .area-icono  { font-size: 2.2rem; }
+    .area-nombre { font-family: 'Fredoka One', cursive; font-size: 1.4rem; }
+    .area-stats  { margin-left: auto; display: flex; gap: 18px; }
+    .area-stat   { text-align: center; }
+    .area-stat-n { font-family: 'Fredoka One', cursive; font-size: 1.4rem; display: block; }
+    .area-stat-l { font-size: 0.68rem; color: var(--texto-suave); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* ── Bloque de grupo ── */
+    .grupo-bloque { background: rgba(255,255,255,0.04); border: 2px solid rgba(255,255,255,0.08); border-radius: 18px; overflow: hidden; margin-bottom: 18px; }
+    .grupo-bloque-header { display: flex; align-items: center; gap: 14px; padding: 14px 20px; flex-wrap: wrap; }
+    .grupo-bloque-titulo { font-family: 'Fredoka One', cursive; font-size: 1.05rem; }
+    .grupo-bloque-sub    { font-size: 0.74rem; color: var(--texto-suave); font-weight: 700; }
+    .grupo-barra-wrap    { flex: 1; min-width: 80px; }
+    .grupo-barra-bg      { height: 7px; background: rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden; }
+    .grupo-barra-fill    { height: 100%; border-radius: 10px; transition: width 0.5s; }
+    .grupo-tabla-wrap    { overflow-x: auto; padding: 0 12px 14px; }
+
+    .tabla-area { width: 100%; border-collapse: separate; border-spacing: 0 5px; }
+    .tabla-area th { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px; color: var(--texto-suave); padding: 5px 12px; text-align: left; font-weight: 700; }
+    .tabla-area td { padding: 10px 12px; background: rgba(255,255,255,0.03); font-size: 0.86rem; }
+    .tabla-area td:first-child { border-radius: 10px 0 0 10px; }
+    .tabla-area td:last-child  { border-radius: 0 10px 10px 0; }
+    .tabla-area tr:hover td    { background: rgba(255,255,255,0.07); }
+    .puntaje-bar      { height: 5px; background: rgba(255,255,255,0.07); border-radius: 5px; margin-top: 4px; }
+    .puntaje-bar-fill { height: 100%; border-radius: 5px; }
+
+    /* ── Podio ── */
+    .podio-seccion { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 28px 22px; }
+    .podio-grid    { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-top: 10px; }
+    .podio-area    { border-radius: 18px; overflow: hidden; }
+    .podio-area-header { padding: 14px 18px; display: flex; align-items: center; gap: 12px; }
+    .podio-area-icono  { font-size: 1.8rem; }
+    .podio-area-nombre { font-family: 'Fredoka One', cursive; font-size: 1.1rem; }
+    .podio-area-sub    { font-size: 0.7rem; color: rgba(255,255,255,0.6); }
+    .podio-puesto  { display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-top: 1px solid rgba(255,255,255,0.06); }
+    .podio-medalla { font-size: 1.5rem; min-width: 30px; text-align: center; }
+    .podio-info    { flex: 1; min-width: 0; }
+    .podio-nombre  { font-weight: 800; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .podio-grupo   { font-size: 0.7rem; color: var(--texto-suave); }
+    .podio-puntaje { font-family: 'Fredoka One', cursive; font-size: 1.2rem; }
+    .podio-vacio   { padding: 18px 16px; color: var(--texto-suave); font-style: italic; font-size: 0.82rem; text-align: center; }
+
+    /* ── Historial ── */
+    .acciones-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+    .tabla-ranking { width: 100%; border-collapse: separate; border-spacing: 0 7px; }
+    .tabla-ranking th { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--texto-suave); padding: 5px 14px; text-align: left; font-weight: 700; }
+    .tabla-ranking td { padding: 12px 14px; background: rgba(255,255,255,0.04); font-size: 0.88rem; }
+    .tabla-ranking td:first-child { border-radius: 12px 0 0 12px; }
+    .tabla-ranking td:last-child  { border-radius: 0 12px 12px 0; }
+    .tabla-ranking tr.top-1 td { background: rgba(255,217,61,0.13);  border-left: 3px solid var(--amarillo); }
+    .tabla-ranking tr.top-2 td { background: rgba(176,176,176,0.10); border-left: 3px solid #B0B0B0; }
+    .tabla-ranking tr.top-3 td { background: rgba(205,127,50,0.10);  border-left: 3px solid #CD7F32; }
+    .posicion-badge { font-family: 'Fredoka One', cursive; font-size: 1.1rem; }
+    .barra-bg   { height: 5px; background: rgba(255,255,255,0.08); border-radius: 5px; margin-top: 3px; }
+    .barra-fill { height: 100%; background: linear-gradient(90deg, var(--primario), var(--azul)); border-radius: 5px; }
+
+    .tag-mundo { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.5px; }
+    .tag-NUMEROS  { background: rgba(255,217,61,0.15);  color: var(--c-numeros); }
+    .tag-LETRAS   { background: rgba(255,101,132,0.15); color: var(--c-letras); }
+    .tag-CIENCIAS { background: rgba(67,233,123,0.15);  color: var(--c-ciencias); }
+
+    /* ── Botones ── */
+    .btn-exportar { background: rgba(67,233,123,0.12); border: 1px solid rgba(67,233,123,0.35); color: var(--acento); padding: 10px 20px; border-radius: 12px; cursor: pointer; font-family: 'Nunito',sans-serif; font-size: 0.84rem; font-weight: 700; transition: all 0.25s; margin-right: 8px; }
+    .btn-exportar:hover { background: rgba(67,233,123,0.22); transform: translateY(-2px); }
+    .btn-limpiar  { background: rgba(255,100,100,0.10); border: 1px solid rgba(255,100,100,0.35); color: #FF8080; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-family: 'Nunito',sans-serif; font-size: 0.84rem; font-weight: 700; transition: all 0.25s; }
+    .btn-limpiar:hover { background: rgba(255,100,100,0.2); transform: translateY(-2px); }
+
+    .sin-datos { text-align: center; color: var(--texto-suave); font-style: italic; padding: 36px; background: rgba(255,255,255,0.03); border-radius: 16px; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: rgba(108,99,255,0.45); border-radius: 10px; }
+
+    @media (max-width: 600px) {
+      .tabla-ranking th, .tabla-ranking td { padding: 8px; font-size: 0.75rem; }
+      .tabla-area   th, .tabla-area   td   { padding: 7px; font-size: 0.73rem; }
+      .area-stats { display: none; }
+      .acciones-bar { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="fondo-animado"></div>
+
+<div class="panel-contenedor">
+
+  <!-- HEADER -->
+  <div class="panel-header">
+    <h1 class="panel-titulo">📊 Panel del Profesor</h1>
+    <p class="panel-subtitulo">Monitoreo en tiempo real · Desafío Académico</p>
+    <a href="index.html" class="btn-volver-inicio">🎮 Ir al juego</a>
+  </div>
+
+  <!-- RESUMEN GENERAL -->
+  <div class="resumen-grid" id="resumen-grid"></div>
+  <div class="separador"></div>
+
+  <!-- ══ RESULTADOS POR ÁREA ══ -->
+  <div class="seccion-titulo" style="color:var(--azul)">📚 Resultados por Área</div>
+
+  <div class="tabs-areas">
+    <div class="tab-area activo-numeros" id="tab-numeros"  onclick="mostrarArea('numeros')">🔢 Números</div>
+    <div class="tab-area"                id="tab-letras"   onclick="mostrarArea('letras')">📚 Letras</div>
+    <div class="tab-area"                id="tab-ciencias" onclick="mostrarArea('ciencias')">🌍 Ciencias</div>
+  </div>
+
+  <!-- Panel Números -->
+  <div class="area-panel visible" id="panel-numeros">
+    <div class="area-header" style="background:rgba(255,217,61,0.07);border:1px solid rgba(255,217,61,0.2)">
+      <span class="area-icono">🔢</span>
+      <div>
+        <div class="area-nombre" style="color:var(--c-numeros)">NÚMEROS</div>
+        <div style="font-size:0.74rem;color:var(--texto-suave)">Razonamiento matemático · 15 preguntas</div>
+      </div>
+      <div class="area-stats" id="stats-numeros"></div>
+    </div>
+    <div id="grupos-numeros"></div>
+  </div>
+
+  <!-- Panel Letras -->
+  <div class="area-panel" id="panel-letras">
+    <div class="area-header" style="background:rgba(255,101,132,0.07);border:1px solid rgba(255,101,132,0.2)">
+      <span class="area-icono">📚</span>
+      <div>
+        <div class="area-nombre" style="color:var(--c-letras)">LETRAS</div>
+        <div style="font-size:0.74rem;color:var(--texto-suave)">Comprensión lectora · 15 preguntas</div>
+      </div>
+      <div class="area-stats" id="stats-letras"></div>
+    </div>
+    <div id="grupos-letras"></div>
+  </div>
+
+  <!-- Panel Ciencias -->
+  <div class="area-panel" id="panel-ciencias">
+    <div class="area-header" style="background:rgba(67,233,123,0.07);border:1px solid rgba(67,233,123,0.2)">
+      <span class="area-icono">🌍</span>
+      <div>
+        <div class="area-nombre" style="color:var(--c-ciencias)">CIENCIAS</div>
+        <div style="font-size:0.74rem;color:var(--texto-suave)">Exploración del mundo natural · Próximamente</div>
+      </div>
+      <div class="area-stats" id="stats-ciencias"></div>
+    </div>
+    <div id="grupos-ciencias"></div>
+  </div>
+
+  <div class="separador"></div>
+
+  <!-- ══ PODIO — MEJOR POR ÁREA ══ -->
+  <div class="seccion-titulo" style="color:var(--amarillo)">🏆 Podio — Mejores por Área</div>
+  <div class="podio-seccion">
+    <div class="podio-grid" id="podio-grid"></div>
+  </div>
+
+  <div class="separador"></div>
+
+  <!-- ══ HISTORIAL COMPLETO ══ -->
+  <div class="acciones-bar">
+    <div class="seccion-titulo" style="margin-bottom:0;color:var(--azul)">📋 Historial Completo</div>
+    <div>
+      <button class="btn-exportar" onclick="exportarCSV()">⬇ Exportar CSV</button>
+      <button class="btn-limpiar"  onclick="limpiarDatos()">🗑 Reiniciar datos</button>
+    </div>
+  </div>
+  <div id="contenedor-ranking"></div>
+
+  <p style="text-align:center;margin-top:30px;color:var(--texto-suave);font-size:0.75rem;">
+    💡 Datos del navegador local · Se actualiza cada 15 segundos
+  </p>
+
+</div>
+
+<script src="preguntas.js"></script>
+<script>
+
+  const COLORES_G = ["#FF6B6B","#4ECDC4","#45B7D1","#96CEB4","#FFEAA7"];
+  const EMOJIS_G  = ["🦁","🦊","🐯","🦅","🐉"];
+  const MEDALLAS  = ["🥇","🥈","🥉"];
+
+  // ── Helpers ──────────────────────────────────────────────────
+  function cargarDatos() {
+    return {
+      gruposData: JSON.parse(localStorage.getItem("desafio_grupos")    || "{}"),
+      resultados: JSON.parse(localStorage.getItem("desafio_resultados") || "[]")
+    };
+  }
+
+  // Último intento por alumno+grupo+mundo
+  function ultimosPorAlumno(resultados) {
+    const mapa = {};
+    resultados.forEach(r => {
+      const key = r.nombre + "||" + r.grupo + "||" + (r.mundo || "NUMEROS");
+      mapa[key] = r;
+    });
+    return Object.values(mapa);
+  }
+
+  // Tabs
+  function mostrarArea(area) {
+    ["numeros","letras","ciencias"].forEach(a => {
+      document.getElementById("panel-" + a).classList.remove("visible");
+      document.getElementById("tab-"   + a).className = "tab-area";
+    });
+    document.getElementById("panel-" + area).classList.add("visible");
+    document.getElementById("tab-"   + area).classList.add("activo-" + area);
+  }
+
+  // ── Grupos por área ───────────────────────────────────────────
+  function renderizarGruposArea(contenedorId, statsId, mundo, color, gruposData, resultados) {
+    const resFiltrados = resultados.filter(r => (r.mundo || "NUMEROS") === mundo);
+    const ultimos      = ultimosPorAlumno(resFiltrados);
+    const completados  = ultimos.length;
+    const promedio     = completados > 0
+      ? Math.round(ultimos.reduce((s, r) => s + r.porcentaje, 0) / completados) : 0;
+
+    // Stats del área
+    document.getElementById(statsId).innerHTML = `
+      <div class="area-stat">
+        <span class="area-stat-n" style="color:${color}">${completados}</span>
+        <span class="area-stat-l">Completaron</span>
+      </div>
+      <div class="area-stat">
+        <span class="area-stat-n" style="color:${color}">${promedio}%</span>
+        <span class="area-stat-l">Promedio</span>
+      </div>`;
+
+    let html = "";
+    for (let i = 1; i <= CONFIG.NUM_GRUPOS; i++) {
+      const key     = `grupo${i}`;
+      const alumnos = Array.isArray(gruposData[key]) ? gruposData[key] : [];
+      const colG    = COLORES_G[i - 1];
+      const emoji   = EMOJIS_G[i - 1];
+      const count   = alumnos.length;
+      const pctBar  = Math.round((count / CONFIG.MAX_ESTUDIANTES_POR_GRUPO) * 100);
+
+      // Ordenar alumnos por puntaje en esta área (los que hicieron quiz primero)
+      const alumnosOrdenados = alumnos.map((alumno, idx) => {
+        const nombre    = alumno.nombre || alumno;
+        const resultado = ultimos.find(r => r.nombre === nombre && r.grupo === `Grupo ${i}`);
+        return { alumno, idx, nombre, resultado };
+      }).sort((a, b) => {
+        const pa = a.resultado ? a.resultado.porcentaje : -1;
+        const pb = b.resultado ? b.resultado.porcentaje : -1;
+        return pb - pa;
+      });
+
+      const filas = alumnosOrdenados.map(({ alumno, nombre, resultado }, rankIdx) => {
+        const pct      = resultado ? resultado.porcentaje  : null;
+        const cor      = resultado ? resultado.correctas   : null;
+        const inc      = resultado ? resultado.incorrectas : null;
+        const pctColor = pct === null ? "" : pct >= 70 ? "#FFD93D" : "#FF6584";
+        const posIcon  = resultado
+          ? (rankIdx === 0 ? "🥇" : rankIdx === 1 ? "🥈" : rankIdx === 2 ? "🥉" : `#${rankIdx+1}`)
+          : "—";
+
+        return `
+          <tr>
+            <td style="font-family:'Fredoka One',cursive;font-size:1rem;text-align:center">${posIcon}</td>
+            <td><strong>${nombre}</strong></td>
+            <td style="color:var(--texto-suave);font-size:0.74rem">${alumno.hora || "—"}</td>
+            <td style="color:#43E97B;font-weight:800;text-align:center">${cor !== null ? cor + " ✅" : "—"}</td>
+            <td style="color:#FF6584;font-weight:800;text-align:center">${inc !== null ? inc + " ❌" : "—"}</td>
+            <td style="min-width:100px">
+              ${pct !== null
+                ? `<strong style="color:${pctColor}">${pct}%</strong>
+                   <div class="puntaje-bar"><div class="puntaje-bar-fill" style="width:${pct}%;background:${color}"></div></div>`
+                : `<span style="color:var(--texto-suave);font-size:0.74rem">Sin quiz</span>`}
+            </td>
+          </tr>`;
+      }).join("");
+
+      const filaVacia = alumnos.length === 0
+        ? `<tr><td colspan="6" style="text-align:center;color:var(--texto-suave);font-style:italic;padding:16px">Sin alumnos registrados</td></tr>`
+        : "";
+
+      html += `
+        <div class="grupo-bloque" style="border-color:${colG}50">
+          <div class="grupo-bloque-header" style="background:${colG}18;border-bottom:1px solid ${colG}30">
+            <span style="font-size:1.7rem">${emoji}</span>
+            <div>
+              <div class="grupo-bloque-titulo" style="color:${colG}">GRUPO ${i}</div>
+              <div class="grupo-bloque-sub">${count} / ${CONFIG.MAX_ESTUDIANTES_POR_GRUPO} alumnos · ordenado por puntaje</div>
+            </div>
+            <div class="grupo-barra-wrap">
+              <div class="grupo-barra-bg">
+                <div class="grupo-barra-fill" style="width:${pctBar}%;background:${colG}"></div>
+              </div>
+            </div>
+          </div>
+          <div class="grupo-tabla-wrap">
+            <table class="tabla-area">
+              <thead>
+                <tr>
+                  <th style="text-align:center">Pos.</th>
+                  <th>Nombre</th><th>Hora</th>
+                  <th style="text-align:center">Correctas</th>
+                  <th style="text-align:center">Incorrectas</th>
+                  <th>Puntaje</th>
+                </tr>
+              </thead>
+              <tbody>${filas}${filaVacia}</tbody>
+            </table>
+          </div>
+        </div>`;
+    }
+
+    document.getElementById(contenedorId).innerHTML = html;
+  }
+
+  // ── Podio por área ────────────────────────────────────────────
+  function renderizarPodio(resultados) {
+    const areas = [
+      { mundo:"NUMEROS",  nombre:"Números",  icono:"🔢", color:"var(--c-numeros)",  bg:"rgba(255,217,61,0.08)",   border:"rgba(255,217,61,0.25)" },
+      { mundo:"LETRAS",   nombre:"Letras",   icono:"📚", color:"var(--c-letras)",   bg:"rgba(255,101,132,0.08)",  border:"rgba(255,101,132,0.25)" },
+      { mundo:"CIENCIAS", nombre:"Ciencias", icono:"🌍", color:"var(--c-ciencias)", bg:"rgba(67,233,123,0.08)",   border:"rgba(67,233,123,0.25)" }
+    ];
+
+    let html = "";
+    areas.forEach(area => {
+      const ultimos = ultimosPorAlumno(resultados.filter(r => (r.mundo || "NUMEROS") === area.mundo));
+      const top3    = [...ultimos].sort((a, b) => b.porcentaje - a.porcentaje || b.correctas - a.correctas).slice(0, 3);
+
+      const puestos = top3.length > 0
+        ? top3.map((r, i) => `
+            <div class="podio-puesto">
+              <span class="podio-medalla">${MEDALLAS[i]}</span>
+              <div class="podio-info">
+                <div class="podio-nombre">${r.nombre}</div>
+                <div class="podio-grupo">${r.grupo}</div>
+              </div>
+              <span class="podio-puntaje" style="color:${area.color}">${r.porcentaje}%</span>
+            </div>`).join("")
+        : `<div class="podio-vacio">Ningún estudiante ha completado este quiz aún</div>`;
+
+      html += `
+        <div class="podio-area" style="background:${area.bg};border:1px solid ${area.border}">
+          <div class="podio-area-header">
+            <span class="podio-area-icono">${area.icono}</span>
+            <div>
+              <div class="podio-area-nombre" style="color:${area.color}">${area.nombre}</div>
+              <div class="podio-area-sub">Top 3 · mejor puntaje</div>
+            </div>
+          </div>
+          ${puestos}
+        </div>`;
+    });
+
+    document.getElementById("podio-grid").innerHTML = html;
+  }
+
+  // ── Resumen general ───────────────────────────────────────────
+  function renderizarResumen(gruposData, resultados) {
+    const totalEst  = Object.values(gruposData).reduce((s, a) => s + (Array.isArray(a) ? a.length : 0), 0);
+    const ultimos   = ultimosPorAlumno(resultados);
+    const totalQuiz = ultimos.length;
+    const promedio  = totalQuiz > 0 ? Math.round(ultimos.reduce((s, r) => s + r.porcentaje, 0) / totalQuiz) : 0;
+    const mejor     = totalQuiz > 0 ? Math.max(...ultimos.map(r => r.porcentaje)) : 0;
+    const numComp   = ultimosPorAlumno(resultados.filter(r => (r.mundo || "NUMEROS") === "NUMEROS")).length;
+    const letComp   = ultimosPorAlumno(resultados.filter(r => r.mundo === "LETRAS")).length;
+
+    document.getElementById("resumen-grid").innerHTML = `
+      <div class="resumen-card"><span class="resumen-numero">${totalEst}</span><span class="resumen-label">👤 Registrados</span></div>
+      <div class="resumen-card"><span class="resumen-numero">${totalQuiz}</span><span class="resumen-label">📝 Quiz hechos</span></div>
+      <div class="resumen-card"><span class="resumen-numero" style="color:var(--c-numeros)">${numComp}</span><span class="resumen-label">🔢 Números</span></div>
+      <div class="resumen-card"><span class="resumen-numero" style="color:var(--c-letras)">${letComp}</span><span class="resumen-label">📚 Letras</span></div>
+      <div class="resumen-card"><span class="resumen-numero">${promedio}%</span><span class="resumen-label">📊 Promedio</span></div>
+      <div class="resumen-card"><span class="resumen-numero">${mejor}%</span><span class="resumen-label">🥇 Mejor</span></div>`;
+  }
+
+  // ── Historial completo ────────────────────────────────────────
+  function renderizarHistorial(resultados) {
+    const el = document.getElementById("contenedor-ranking");
+    if (!resultados.length) {
+      el.innerHTML = `<div class="sin-datos"><p style="font-size:2rem;margin-bottom:10px">📭</p><p>Aún no hay quiz completados.</p></div>`;
+      return;
+    }
+    const ordenados = [...resultados].sort((a, b) => b.porcentaje - a.porcentaje || b.correctas - a.correctas);
+    const filas = ordenados.map((r, i) => {
+      const mundo = r.mundo || "NUMEROS";
+      return `
+        <tr class="${i < 3 ? "top-"+(i+1) : ""}">
+          <td><span class="posicion-badge">${i < 3 ? MEDALLAS[i] : "#"+(i+1)}</span></td>
+          <td><strong>${r.nombre}</strong></td>
+          <td>${r.grupo}</td>
+          <td><span class="tag-mundo tag-${mundo}">${mundo}</span></td>
+          <td style="color:#43E97B;font-weight:800">${r.correctas} ✅</td>
+          <td style="color:#FF6584;font-weight:800">${r.incorrectas} ❌</td>
+          <td>
+            <strong style="color:#FFD93D">${r.porcentaje}%</strong>
+            <div class="barra-bg"><div class="barra-fill" style="width:${r.porcentaje}%"></div></div>
+          </td>
+          <td style="color:var(--texto-suave);font-size:0.74rem">${r.fecha||"—"} ${r.hora||""}</td>
+        </tr>`;
+    }).join("");
+
+    el.innerHTML = `
+      <table class="tabla-ranking">
+        <thead>
+          <tr>
+            <th>#</th><th>Nombre</th><th>Grupo</th><th>Área</th>
+            <th>Correctas</th><th>Incorrectas</th>
+            <th>Puntaje</th><th>Fecha / Hora</th>
+          </tr>
+        </thead>
+        <tbody>${filas}</tbody>
+      </table>`;
+  }
+
+  // ── Panel completo ────────────────────────────────────────────
+  function renderizarPanel() {
+    const { gruposData, resultados } = cargarDatos();
+    renderizarResumen(gruposData, resultados);
+    renderizarGruposArea("grupos-numeros",  "stats-numeros",  "NUMEROS",  "var(--c-numeros)",  gruposData, resultados);
+    renderizarGruposArea("grupos-letras",   "stats-letras",   "LETRAS",   "var(--c-letras)",   gruposData, resultados);
+    renderizarGruposArea("grupos-ciencias", "stats-ciencias", "CIENCIAS", "var(--c-ciencias)", gruposData, resultados);
+    renderizarPodio(resultados);
+    renderizarHistorial(resultados);
+  }
+
+  // ── Exportar CSV ──────────────────────────────────────────────
+  function exportarCSV() {
+    const { resultados } = cargarDatos();
+    if (!resultados.length) { alert("No hay resultados para exportar."); return; }
+    const cab  = ["Nombre","Grupo","Área","Fecha","Hora","Correctas","Incorrectas","Porcentaje","Detalle"];
+    const rows = resultados.map(r =>
+      [r.nombre, r.grupo, r.mundo||"NUMEROS", r.fecha, r.hora,
+       r.correctas, r.incorrectas, r.porcentaje+"%", r.detalle]
+        .map(v => `"${v}"`).join(",")
+    );
+    const blob = new Blob(["\uFEFF"+[cab.join(","),...rows].join("\n")], {type:"text/csv;charset=utf-8;"});
+    Object.assign(document.createElement("a"), {
+      href: URL.createObjectURL(blob),
+      download: `desafio_${new Date().toISOString().slice(0,10)}.csv`
+    }).click();
+  }
+
+  // ── Limpiar ───────────────────────────────────────────────────
+  function limpiarDatos() {
+    if (confirm("⚠️ ¿Eliminar TODOS los datos?\n\nBorrará grupos, alumnos y resultados. No se puede deshacer.")) {
+      localStorage.removeItem("desafio_grupos");
+      localStorage.removeItem("desafio_resultados");
+      location.reload();
+    }
+  }
+
+  renderizarPanel();
+  setInterval(renderizarPanel, 15000);
+
+</script>
+</body>
+</html>
